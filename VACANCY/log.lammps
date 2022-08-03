@@ -1,0 +1,249 @@
+LAMMPS (30 Nov 2020)
+#-----bcc iron
+#-----relaxing the box to get the lattice constant
+# lei.zhang@rug.nl
+
+#------------------------------------
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+variable        latparam equal ${lat}
+variable        latparam equal 2.833612
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.833612 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8336120 2.8336120 2.8336120
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.334448 11.334448 11.334448)
+  2 by 2 by 2 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.001 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+#pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#pair_coeff      * * /home/lei/gap_training_2021_12_13/l_6_n_12_allNewData_turboSOAP/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_12_60_17_6_15_829" 26 # TurboSOAP descriptor
+#pair_coeff      * * /home/lei/gap_training_2021_12_13/l_6_n_12_allNewData_doubleSOAP/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_14_60_8_16_28_553" 26
+#pair_coeff      * * /home/lei/gap_training_2021_12_13/l_6_n_12_newdata_2021_12_16/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_17_60_2_59_46_132" 26
+#pair_coeff      * * /home/lei/gap_training_2021_12_13/l_6_n_12_newdata_doubleSOAP_2021_12_17/gap_Fe_test.xml   "Potential xml_label=GAP_2021_12_17_60_21_56_31_840" 26
+#pair_coeff      * * /data/lei/gap_training_2021_12_13/l_6_n_12_newdata_doubleSOAP_2021_12_21/gap_Fe_test.xml   "Potential xml_label=GAP_2021_12_21_60_14_55_52_923" 26
+#pair_coeff      * * /home/lei/gap_training_2021_12_13/l_6_n_12_newdata_doubleSOAP_Rcut6_2021_12_21/gap_Fe_test.xml   "Potential xml_label=GAP_2021_12_21_60_22_39_47_189" 26
+#pair_coeff      * * /data/lei/gap_training_addCracks_2022_01_25/doubSOAP_R5_2022_01_25/gap_Fe_test.xml   "Potential xml_label=GAP_2022_1_26_60_7_10_9_751" 26
+
+#pair_coeff      * * /home/p301616/gap_trainedOn_nieuwpoort/doubSOAP_R5_2022_01_28/gap_Fe_test.xml   "Potential xml_label=GAP_2022_1_29_60_3_44_50_986" 26
+
+#pair_coeff      * * /home/lei/gap_training_addCracks_2022_01_25/doubSOAP_R5_2022_02_10_iter3/gap_Fe_test.xml   "Potential xml_label=GAP_2022_2_11_60_3_6_24_998" 26
+#pair_coeff      * * /home/lei/gap_training_addCracks/doubSOAP_R5_2022_02_23_iter8/gap_Fe_test.xml   "Potential xml_label=GAP_2022_2_23_60_14_2_51_919" 26
+#pair_coeff      * * /home/lei/gap_training_addCracks/turboSOAP_iter10/gap_Fe_test.xml   "Potential xml_label=GAP_2022_3_8_60_9_8_45_147" 26
+#pair_coeff      * * /home/lei/gap_training_addCracks/turboSOAP_iter11/gap_Fe_test.xml   "Potential xml_label=GAP_2022_3_8_60_14_22_10_147" 26
+#pair_coeff      * * /home/lei/gap_training_addCracks/doubSOAP_R5_2022_03_08_iter11/gap_Fe_test.xml   "Potential xml_label=GAP_2022_3_8_60_13_19_13_884" 26
+#pair_coeff      * * /home/lei/gap_training_addCracks/turboSOAP_iter11_2/gap_Fe_test.xml   "Potential xml_label=GAP_2022_3_9_60_20_54_41_133" 26
+#pair_coeff      * * /home/lei/gap_training_addCracks/turboSOAP_iter11/gap_Fe_test.xml   "Potential xml_label=GAP_2022_3_10_60_5_9_4_798" 26
+#pair_coeff      * * /home/lei/gap_training_addCracks/turboSOAP_iter11_basis10/gap_Fe_test.xml   "Potential xml_label=GAP_2022_3_10_60_10_51_48_731" 26
+#pair_coeff      * * /home/lei/gap_training_addCracks/doubleturboSOAP_iter11/gap_Fe_test.xml   "Potential xml_label=GAP_2022_3_9_60_23_12_29_37" 26
+#pair_coeff      * * /home/lei/gap_training_addCracks/turboSOAP_iter11_compressfile/gap_Fe_test.xml   "Potential xml_label=GAP_2022_3_10_60_11_56_19_400" 26
+#pair_coeff      * * /home/lei/gap_snellius/doubleturboSOAP_iter11_basis8/gap_Fe_test.xml   "Potential xml_label=GAP_2022_3_10_60_18_34_37_91" 26
+#pair_coeff      * * /home/lei/gap_snellius/doubleturboSOAP_iter0_basis8/gap_Fe_test.xml "Potential xml_label=GAP_2022_3_11_60_22_7_9_623" 26
+#pair_coeff      * * /home/lei/gap_snellius/doubleturboSOAP_iter0_hcp_basis8/gap_Fe_test.xml "Potential xml_label=GAP_2022_3_28_120_15_22_12_14" 26
+pair_coeff      * * /home/lei/gap_snellius/final/gap_Fe_test.xml "Potential xml_label=GAP_2022_5_28_120_3_13_35_983" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+thermo          10
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+run             0
+WARNING: No fixes defined, atoms won't move (../verlet.cpp:54)
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 3.840 | 3.840 | 3.840 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442999.46    11.334448    11.334448    11.334448   -45.080108   -45.080108    -45.08011 4.8657049e-05 4.5865914e-05 4.5865937e-05   -45.080109 
+Loop time of 2.563e-06 on 8 procs for 0 steps with 128 atoms
+
+146.3% CPU use with 8 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0          | 0          | 0          |   0.0 |  0.00
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0          | 0          | 0          |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 2.563e-06  |            |       |100.00
+
+Nlocal:        16.0000 ave          16 max          16 min
+Histogram: 8 0 0 0 0 0 0 0 0 0
+Nghost:        543.000 ave         543 max         543 min
+Histogram: 8 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 8 0 0 0 0 0 0 0 0 0
+FullNghs:      2176.00 ave        2176 max        2176 min
+Histogram: 8 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 17408
+Ave neighs/atom = 136.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Initial potential energy-----------------------------------------
+variable        tmp equal pe
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442999.458597301
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        Ecoh equal ${pe0}/${N}
+variable        Ecoh equal -442999.458597301/${N}
+variable        Ecoh equal -442999.458597301/128
+#------Delete one atom------------------------------------------------
+group           deleted id 1
+1 atoms in group deleted
+delete_atoms    group deleted
+Deleted 1 atoms, new total = 127
+#------Relaxation -----------------------------------------------------
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Per MPI rank memory allocation (min/avg/max) = 4.965 | 4.965 | 4.965 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -439536.11    11.334448    11.334448    11.334448   -1728.8375   -1728.8375   -1728.8375 4.8615133e-05 3.3126163e-05 2.5522317e-05   -1728.8375 
+       9   -439536.27    11.334448    11.334448    11.334448   -3361.1927   -3361.1928   -3361.1927 -4.7578225e-06 4.4976902e-05 1.5192308e-05   -3361.1927 
+Loop time of 1.53545 on 8 procs for 9 steps with 127 atoms
+
+98.1% CPU use with 8 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -439536.112726737  -439536.265438143  -439536.265438143
+  Force two-norm initial, final = 1.5306374 0.00023396413
+  Force max component initial, final = 0.28659558 2.6655100e-05
+  Final line search alpha, max atom move = 0.12500000 3.3318875e-06
+  Iterations, force evaluations = 9 29
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 1.3591     | 1.4497     | 1.5099     |   4.4 | 94.42
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.024973   | 0.085115   | 0.17572    |  18.3 |  5.54
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0006189  |            |       |  0.04
+
+Nlocal:        15.8750 ave          16 max          15 min
+Histogram: 1 0 0 0 0 0 0 0 0 7
+Nghost:        535.125 ave         536 max         535 min
+Histogram: 7 0 0 0 0 0 0 0 0 1
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 8 0 0 0 0 0 0 0 0 0
+FullNghs:      2142.00 ave        2162 max        2026 min
+Histogram: 1 0 0 0 0 0 0 0 0 7
+
+Total # of neighbors = 17136
+Ave neighs/atom = 134.92913
+Neighbor list builds = 0
+Dangerous builds = 0
+
+timestep        0.01
+min_style       fire
+minimize        0.0 1e-4 100000000 10000000000
+  Parameters for fire: 
+    dmax delaystep dtgrow dtshrink alpha0 alphashrink tmax tmin    integrator halfstepback 
+     0.1        20    1.1      0.5   0.25        0.99   10 0.02 eulerimplicit          yes 
+Per MPI rank memory allocation (min/avg/max) = 3.840 | 3.845 | 3.849 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       9   -439536.27    11.334448    11.334448    11.334448   -3361.1933   -3361.1933   -3361.1933 -8.1199553e-06 5.7677375e-05 -4.1056518e-06   -3361.1933 
+      10   -439536.27    11.334448    11.334448    11.334448   -3361.2166   -3361.2167   -3361.2167 1.6366738e-05 9.5403537e-06 -3.1236905e-05   -3361.2167 
+      12   -439536.27    11.334448    11.334448    11.334448    -3361.308   -3361.3081   -3361.3079 1.861305e-05 9.4145037e-06 -1.5299138e-05    -3361.308 
+Loop time of 0.318905 on 8 procs for 3 steps with 127 atoms
+
+99.8% CPU use with 8 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = force tolerance
+  Energy initial, next-to-last, final = 
+     -439536.265439277  -439536.265435624  -439536.265436467
+  Force two-norm initial, final = 0.00023396831 7.8241016e-05
+  Force max component initial, final = 2.6658443e-05 1.0351288e-05
+  Final line search alpha, max atom move = 0.0000000 0.0000000
+  Iterations, force evaluations = 3 4
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.13433    | 0.22472    | 0.29438    |  11.0 | 70.47
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.02435    | 0.093995   | 0.1844     |  17.0 | 29.47
+Output  | 2.0981e-05 | 2.3246e-05 | 3.2902e-05 |   0.0 |  0.01
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0001624  |            |       |  0.05
+
+Nlocal:        15.8750 ave          22 max           9 min
+Histogram: 1 0 0 3 0 0 2 1 0 1
+Nghost:        535.125 ave         542 max         529 min
+Histogram: 1 0 1 2 0 0 3 0 0 1
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 8 0 0 0 0 0 0 0 0 0
+FullNghs:      2136.00 ave        2958 max        1210 min
+Histogram: 1 0 0 3 0 0 2 1 0 1
+
+Total # of neighbors = 17088
+Ave neighs/atom = 134.55118
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal pe
+variable        pe1 equal ${tmp}
+variable        pe1 equal -439536.265436467
+variable        Evac equal (${pe1}-${pe0})+${Ecoh}
+variable        Evac equal (-439536.265436467-${pe0})+${Ecoh}
+variable        Evac equal (-439536.265436467--442999.458597301)+${Ecoh}
+variable        Evac equal (-439536.265436467--442999.458597301)+-3460.93327029141
+
+print "========================================="  append ../results.txt
+=========================================
+print		"Vacancy formation energy is:" append ../results.txt
+Vacancy formation energy is:
+print           "${Evac}" append ../results.txt
+2.25989054255569
+
+Total wall time: 0:00:03

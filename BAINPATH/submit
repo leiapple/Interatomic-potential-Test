@@ -1,0 +1,12 @@
+#!/bin/bash
+#SBATCH --job-name=bain_path
+#SBATCH --ntasks=2
+#SBATCH --cpus-per-task=1
+#SBATCH --time=10:00:00
+#SBATCH --error=slurm-%j.stderr
+#SBATCH --output=slurm-%j.stdout
+lmp=$1
+a1=$2
+echo $kmp $a1
+module restore set-gap
+mpirun -np 2 $lmp -in in.bain_path -v lat $a1

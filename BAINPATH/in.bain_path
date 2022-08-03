@@ -1,0 +1,79 @@
+#-----bcc iron
+#-----calculate Bain path.
+# lei.zhang@rug.nl
+
+#---------------------------------------------------------------------
+shell           rm bain_path.dat
+log             bainpath.log
+
+label           loop_start
+
+variable        i loop 1 65
+variable        latparam equal ${lat}
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) ------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1 
+region          box block 0 1 0 1 0 1 units lattice
+create_box      1 box
+create_atoms    1 box
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute         eng all pe/atom
+compute         new all temp
+compute         csym all centro/atom bcc
+compute         poten all pe
+compute         stress all stress/atom NULL
+
+#-------Change---------------------------------------------------------
+variable        ratio  equal 0.7+0.02*${i}
+variable        alx    equal ${latparam}*${ratio}
+variable        al     equal ${alx}/${ratio}
+
+change_box      all x final 0 ${alx} y final 0 ${al} z final 0 ${al} remap units box
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+fix             relaxB all box/relax aniso 0.0 vmax 0.0001 couple xyz  #couple xz couple yz
+min_style       cg
+minimize        1e-18 10e-9 100000000 1000000000
+unfix           relaxB
+
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        V equal (${LX}*${LY}*${LZ})
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        ca  equal ${LX}/${LY}
+#-----compute ----------------------------------------------------------
+print           "${ca} ${pe0} ${ratio} ${LX} ${LY} ${LZ}" append ./bain_path.dat
+
+#-----jump to next loop-------------------------------------------------
+next            i
+jump            in.bain_path loop_start
+
+shell           cp bain_path.dat ../PLOT_DATA/BainPath_GAP_lei.csv
+shell           touch ../flag_bp
+#-----end---------------------------------------------------------------

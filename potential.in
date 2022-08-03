@@ -1,0 +1,4 @@
+#---------------------ADP---------------------
+pair_style adp
+pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------

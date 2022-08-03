@@ -1,0 +1,58 @@
+#-----bcc iron
+#-----relaxing the box to get the lattice constant
+# lei.zhang@rug.nl
+
+#------------------------------------
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+variable        latparam equal 2.834
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1 
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+create_atoms    1 box
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+fix             1 all box/relax iso 0.0 vmax 0.0001
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+unfix           1
+
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        ax equal ${LX}*0.25
+variable        ay equal ${LY}*0.25
+variable        az equal ${LZ}*0.25
+variable        lat equal (${ax}+${ay}+${az})/3
+
+#print           "========================================="  append ../results.txt
+#print		"The equilirium lattice parameter is:" append ../results.txt
+#print           "${lat}" append ../results.txt
+
