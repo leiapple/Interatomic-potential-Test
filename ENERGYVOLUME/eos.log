@@ -1,0 +1,4385 @@
+label           loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*1
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.78733333333333 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.7873333 2.7873333 2.7873333
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.149333 11.149333 11.149333)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.001 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.142 | 5.142 | 5.142 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442996.98    11.149333    11.149333    11.149333    114429.01    114429.01    114429.01 1.0177157e-05 1.1260034e-05 1.1260022e-05    114429.01 
+       2   -442996.98    11.149333    11.149333    11.149333    114429.04    114429.04    114429.04 -0.00065196012 9.5107506e-05 0.00044082773    114429.04 
+Loop time of 2.07067 on 1 procs for 2 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442996.984578098  -442996.984592724  -442996.984592724
+  Force two-norm initial, final = 5.0430192e-07 7.9041330e-07
+  Force max component initial, final = 8.4701698e-08 1.1943388e-07
+  Final line search alpha, max atom move = 0.50000000 5.9716942e-08
+  Iterations, force evaluations = 2 5
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 2.0704     | 2.0704     | 2.0704     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 6.938e-05  | 6.938e-05  | 6.938e-05  |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0002041  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1601.00 ave        1601 max        1601 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      17408.0 ave       17408 max       17408 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 17408
+Ave neighs/atom = 136.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.1493333333333
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.1493333333333
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.1493333333333
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.1493333333333*${LY}*${LZ})
+variable        V equal (11.1493333333333*11.1493333333333*${LZ})
+variable        V equal (11.1493333333333*11.1493333333333*11.1493333333333)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442996.984592724
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442996.984592724/${N}
+variable        teng equal -442996.984592724/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1385.94724486636/${N}
+variable        vol  equal 1385.94724486636/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+10.8277128505184 -3460.91394213066
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*2
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.79066666666667 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.7906667 2.7906667 2.7906667
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.162667 11.162667 11.162667)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.142 | 5.142 | 5.142 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442997.33    11.162667    11.162667    11.162667    106113.04    106113.04    106113.04 -2.4106162e-11 7.8009331e-12 -2.9988833e-11    106113.04 
+       1   -442997.33    11.162667    11.162667    11.162667    106113.04    106113.04    106113.04 -2.4106162e-11 7.8009331e-12 -2.9988833e-11    106113.04 
+Loop time of 1.40083 on 1 procs for 1 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442997.327230308  -442997.327230308  -442997.327230308
+  Force two-norm initial, final = 3.9091386e-07 3.9091386e-07
+  Force max component initial, final = 6.6031305e-08 6.6031305e-08
+  Final line search alpha, max atom move = 0.50000000 3.3015652e-08
+  Iterations, force evaluations = 1 3
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 1.4007     | 1.4007     | 1.4007     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 4.6015e-05 | 4.6015e-05 | 4.6015e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.000133   |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1601.00 ave        1601 max        1601 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      17408.0 ave       17408 max       17408 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 17408
+Ave neighs/atom = 136.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.1626666666667
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.1626666666667
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.1626666666667
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.1626666666667*${LY}*${LZ})
+variable        V equal (11.1626666666667*11.1626666666667*${LZ})
+variable        V equal (11.1626666666667*11.1626666666667*11.1626666666667)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442997.327230308
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442997.327230308/${N}
+variable        teng equal -442997.327230308/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1390.92549889898/${N}
+variable        vol  equal 1390.92549889898/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+10.8666054601483 -3460.91661898678
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*3
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.794 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.7940000 2.7940000 2.7940000
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.176000 11.176000 11.176000)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.142 | 5.142 | 5.142 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442997.64       11.176       11.176       11.176    97850.783    97850.783    97850.782 -7.1814043e-05 -1.8435266e-05 -1.8435265e-05    97850.783 
+       1   -442997.64       11.176       11.176       11.176    97850.783    97850.783    97850.782 -7.1814043e-05 -1.8435266e-05 -1.8435265e-05    97850.783 
+Loop time of 1.37292 on 1 procs for 1 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442997.644826399  -442997.644826399  -442997.644826399
+  Force two-norm initial, final = 4.2825172e-07 4.2825172e-07
+  Force max component initial, final = 6.3173224e-08 6.3173224e-08
+  Final line search alpha, max atom move = 0.50000000 3.1586612e-08
+  Iterations, force evaluations = 1 3
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 1.3727     | 1.3727     | 1.3727     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 4.4823e-05 | 4.4823e-05 | 4.4823e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0001488  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1601.00 ave        1601 max        1601 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      17408.0 ave       17408 max       17408 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 17408
+Ave neighs/atom = 136.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.176
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.176
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.176
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.176*${LY}*${LZ})
+variable        V equal (11.176*11.176*${LZ})
+variable        V equal (11.176*11.176*11.176)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442997.644826399
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442997.644826399/${N}
+variable        teng equal -442997.644826399/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1395.915659776/${N}
+variable        vol  equal 1395.915659776/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+10.905591092 -3460.91910020624
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*4
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.79733333333333 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.7973333 2.7973333 2.7973333
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.189333 11.189333 11.189333)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.142 | 5.142 | 5.142 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442997.94    11.189333    11.189333    11.189333    89632.997    89632.997    89632.997 2.3197672e-05 1.9638707e-05 1.9638697e-05    89632.997 
+       1   -442997.94    11.189333    11.189333    11.189333    89632.997    89632.997    89632.997 2.3197672e-05 1.9638707e-05 1.9638697e-05    89632.997 
+Loop time of 1.37165 on 1 procs for 1 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442997.937505533  -442997.937505533  -442997.937505533
+  Force two-norm initial, final = 3.8512403e-07 3.8512403e-07
+  Force max component initial, final = 5.6719292e-08 5.6719292e-08
+  Final line search alpha, max atom move = 0.50000000 2.8359646e-08
+  Iterations, force evaluations = 1 3
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 1.3715     | 1.3715     | 1.3715     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 4.4346e-05 | 4.4346e-05 | 4.4346e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0001318  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1601.00 ave        1601 max        1601 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      17408.0 ave       17408 max       17408 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 17408
+Ave neighs/atom = 136.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.1893333333333
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.1893333333333
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.1893333333333
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.1893333333333*${LY}*${LZ})
+variable        V equal (11.1893333333333*11.1893333333333*${LZ})
+variable        V equal (11.1893333333333*11.1893333333333*11.1893333333333)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442997.937505533
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442997.937505533/${N}
+variable        teng equal -442997.937505533/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1400.91774171969/${N}
+variable        vol  equal 1400.91774171969/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+10.9446698571851 -3460.92138676198
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*5
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.80066666666667 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8006667 2.8006667 2.8006667
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.202667 11.202667 11.202667)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442998.21    11.202667    11.202667    11.202667     81452.45     81452.45     81452.45 4.7194653e-05 2.4762614e-05 2.4762602e-05     81452.45 
+       3   -442998.21    11.202667    11.202667    11.202667    81452.451     81452.45     81452.45 0.00044840863 -0.0001098805 -0.00033710396     81452.45 
+Loop time of 2.81384 on 1 procs for 3 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442998.205161464  -442998.205176702  -442998.205176702
+  Force two-norm initial, final = 4.0632098e-07 8.4006963e-07
+  Force max component initial, final = 6.6021401e-08 1.2841623e-07
+  Final line search alpha, max atom move = 0.50000000 6.4208116e-08
+  Iterations, force evaluations = 3 7
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 2.8135     | 2.8135     | 2.8135     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 7.0095e-05 | 7.0095e-05 | 7.0095e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0002327  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      17408.0 ave       17408 max       17408 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 17408
+Ave neighs/atom = 136.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.2026666666667
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.2026666666667
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.2026666666667
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.2026666666667*${LY}*${LZ})
+variable        V equal (11.2026666666667*11.2026666666667*${LZ})
+variable        V equal (11.2026666666667*11.2026666666667*11.2026666666667)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442998.205176702
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442998.205176702/${N}
+variable        teng equal -442998.205176702/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1405.93175895231/${N}
+variable        vol  equal 1405.93175895231/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+10.9838418668149 -3460.92347794298
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*6
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.804 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8040000 2.8040000 2.8040000
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.216000 11.216000 11.216000)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442998.45       11.216       11.216       11.216    73303.742    73303.742    73303.742 1.3554757e-05 8.2123583e-06 8.2123342e-06    73303.742 
+       2   -442998.45       11.216       11.216       11.216    73303.744    73303.744    73303.744 1.7082575e-05 -1.1525442e-05 -0.00021988333    73303.744 
+Loop time of 2.06854 on 1 procs for 2 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+      -442998.44787995   -442998.44789478   -442998.44789478
+  Force two-norm initial, final = 4.2436558e-07 6.9208573e-07
+  Force max component initial, final = 8.7028971e-08 1.1284112e-07
+  Final line search alpha, max atom move = 0.50000000 5.6420561e-08
+  Iterations, force evaluations = 2 5
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 2.0682     | 2.0682     | 2.0682     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 7.0095e-05 | 7.0095e-05 | 7.0095e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0002158  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      17408.0 ave       17408 max       17408 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 17408
+Ave neighs/atom = 136.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.216
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.216
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.216
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.216*${LY}*${LZ})
+variable        V equal (11.216*11.216*${LZ})
+variable        V equal (11.216*11.216*11.216)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442998.44789478
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442998.44789478/${N}
+variable        teng equal -442998.44789478/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1410.957725696/${N}
+variable        vol  equal 1410.957725696/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.023107232 -3460.92537417797
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*7
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.80733333333333 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8073333 2.8073333 2.8073333
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.229333 11.229333 11.229333)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442998.67    11.229333    11.229333    11.229333    65183.574    65183.574    65183.574 5.7392081e-05 8.3462027e-05 8.3462001e-05    65183.574 
+       1   -442998.67    11.229333    11.229333    11.229333    65183.574    65183.574    65183.574 5.7392081e-05 8.3462027e-05 8.3462001e-05    65183.574 
+Loop time of 1.50594 on 1 procs for 1 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442998.665627308  -442998.665627308  -442998.665627308
+  Force two-norm initial, final = 4.5789191e-07 4.5789191e-07
+  Force max component initial, final = 7.3846570e-08 7.3846570e-08
+  Final line search alpha, max atom move = 0.50000000 3.6923285e-08
+  Iterations, force evaluations = 1 3
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 1.5058     | 1.5058     | 1.5058     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 3.5763e-05 | 3.5763e-05 | 3.5763e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0001373  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      17408.0 ave       17408 max       17408 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 17408
+Ave neighs/atom = 136.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.2293333333333
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.2293333333333
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.2293333333333
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.2293333333333*${LY}*${LZ})
+variable        V equal (11.2293333333333*11.2293333333333*${LZ})
+variable        V equal (11.2293333333333*11.2293333333333*11.2293333333333)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442998.665627308
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442998.665627308/${N}
+variable        teng equal -442998.665627308/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1415.99565617302/${N}
+variable        vol  equal 1415.99565617302/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.0624660638517 -3460.92707521334
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*8
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.81066666666667 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8106667 2.8106667 2.8106667
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.242667 11.242667 11.242667)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442998.86    11.242667    11.242667    11.242667    57090.549    57090.549    57090.548 9.8624428e-05 8.6522198e-05 8.6522146e-05    57090.548 
+       1   -442998.86    11.242667    11.242667    11.242667    57090.549    57090.549    57090.548 9.8624428e-05 8.6522198e-05 8.6522146e-05    57090.548 
+Loop time of 1.3519 on 1 procs for 1 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+      -442998.85830064   -442998.85830064   -442998.85830064
+  Force two-norm initial, final = 4.5167117e-07 4.5167117e-07
+  Force max component initial, final = 7.2300099e-08 7.2300099e-08
+  Final line search alpha, max atom move = 0.50000000 3.6150050e-08
+  Iterations, force evaluations = 1 3
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 1.3517     | 1.3517     | 1.3517     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 3.6001e-05 | 3.6001e-05 | 3.6001e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0001366  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      17408.0 ave       17408 max       17408 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 17408
+Ave neighs/atom = 136.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.2426666666667
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.2426666666667
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.2426666666667
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.2426666666667*${LY}*${LZ})
+variable        V equal (11.2426666666667*11.2426666666667*${LZ})
+variable        V equal (11.2426666666667*11.2426666666667*11.2426666666667)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442998.85830064
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442998.85830064/${N}
+variable        teng equal -442998.85830064/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1421.04556460564/${N}
+variable        vol  equal 1421.04556460564/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.1019184734816 -3460.92858047375
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*9
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.814 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8140000 2.8140000 2.8140000
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.256000 11.256000 11.256000)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442999.03       11.256       11.256       11.256    49025.207    49025.207    49025.211 -7.639667e-12 8.4815894e-12 1.2379379e-11    49025.209 
+       1   -442999.03       11.256       11.256       11.256    49025.207    49025.207    49025.211 -7.639667e-12 8.4815894e-12 1.2379379e-11    49025.209 
+Loop time of 1.35697 on 1 procs for 1 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442999.025926895  -442999.025926895  -442999.025926895
+  Force two-norm initial, final = 4.3167786e-07 4.3167786e-07
+  Force max component initial, final = 7.4982034e-08 7.4982034e-08
+  Final line search alpha, max atom move = 0.50000000 3.7491017e-08
+  Iterations, force evaluations = 1 3
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 1.3568     | 1.3568     | 1.3568     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 3.7909e-05 | 3.7909e-05 | 3.7909e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0001326  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      17408.0 ave       17408 max       17408 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 17408
+Ave neighs/atom = 136.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.256
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.256
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.256
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.256*${LY}*${LZ})
+variable        V equal (11.256*11.256*${LZ})
+variable        V equal (11.256*11.256*11.256)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442999.025926895
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442999.025926895/${N}
+variable        teng equal -442999.025926895/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1426.107465216/${N}
+variable        vol  equal 1426.107465216/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.141464572 -3460.92989005387
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*10
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.81733333333333 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8173333 2.8173333 2.8173333
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.269333 11.269333 11.269333)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442999.17    11.269333    11.269333    11.269333    40989.897    40989.897    40989.896 -2.9148112e-06 -1.7488799e-06 -1.7488522e-06    40989.897 
+       2   -442999.17    11.269333    11.269333    11.269333    40989.887    40989.887    40989.887 -0.00042583083 7.0667504e-05 0.00020410327    40989.887 
+Loop time of 2.02997 on 1 procs for 2 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442999.168434475  -442999.168438875  -442999.168438875
+  Force two-norm initial, final = 4.4144256e-07 8.6173210e-07
+  Force max component initial, final = 6.8008358e-08 1.3445011e-07
+  Final line search alpha, max atom move = 0.50000000 6.7225054e-08
+  Iterations, force evaluations = 2 5
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 2.0297     | 2.0297     | 2.0297     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 5.1498e-05 | 5.1498e-05 | 5.1498e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0002112  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      17408.0 ave       17408 max       17408 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 17408
+Ave neighs/atom = 136.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.2693333333333
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.2693333333333
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.2693333333333
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.2693333333333*${LY}*${LZ})
+variable        V equal (11.2693333333333*11.2693333333333*${LZ})
+variable        V equal (11.2693333333333*11.2693333333333*11.2693333333333)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442999.168438875
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442999.168438875/${N}
+variable        teng equal -442999.168438875/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1431.18137222636/${N}
+variable        vol  equal 1431.18137222636/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.1811044705184 -3460.93100342871
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*11
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.82066666666667 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8206667 2.8206667 2.8206667
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.282667 11.282667 11.282667)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442999.29    11.282667    11.282667    11.282667    32988.672    32988.672    32988.672 -6.3513907e-06 6.036037e-05 6.036039e-05    32988.672 
+       2   -442999.29    11.282667    11.282667    11.282667    32988.685    32988.685    32988.686 5.7028299e-05 -0.00011214053 0.00034772291    32988.685 
+Loop time of 2.02401 on 1 procs for 2 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442999.285806163  -442999.285842228  -442999.285842228
+  Force two-norm initial, final = 5.3813809e-07 8.1847796e-07
+  Force max component initial, final = 8.8820737e-08 1.2630992e-07
+  Final line search alpha, max atom move = 0.50000000 6.3154959e-08
+  Iterations, force evaluations = 2 5
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 2.0238     | 2.0238     | 2.0238     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 5.126e-05  | 5.126e-05  | 5.126e-05  |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0001945  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      17408.0 ave       17408 max       17408 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 17408
+Ave neighs/atom = 136.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.2826666666667
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.2826666666667
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.2826666666667
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.2826666666667*${LY}*${LZ})
+variable        V equal (11.2826666666667*11.2826666666667*${LZ})
+variable        V equal (11.2826666666667*11.2826666666667*11.2826666666667)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442999.285842228
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442999.285842228/${N}
+variable        teng equal -442999.285842228/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1436.26729985898/${N}
+variable        vol  equal 1436.26729985898/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.2208382801483 -3460.93192064241
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*12
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.824 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8240000 2.8240000 2.8240000
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.296000 11.296000 11.296000)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442999.38       11.296       11.296       11.296    25027.253    25027.253    25027.253 0.00020625688 0.0001978029 0.00019780289    25027.253 
+       1   -442999.38       11.296       11.296       11.296    25027.253    25027.253    25027.253 0.00020625688 0.0001978029 0.00019780289    25027.253 
+Loop time of 1.37147 on 1 procs for 1 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442999.378145872  -442999.378145872  -442999.378145872
+  Force two-norm initial, final = 5.0118130e-07 5.0118130e-07
+  Force max component initial, final = 7.5150169e-08 7.5150169e-08
+  Final line search alpha, max atom move = 0.50000000 3.7575085e-08
+  Iterations, force evaluations = 1 3
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 1.3713     | 1.3713     | 1.3713     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 3.1948e-05 | 3.1948e-05 | 3.1948e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0001507  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      17408.0 ave       17408 max       17408 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 17408
+Ave neighs/atom = 136.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.296
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.296
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.296
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.296*${LY}*${LZ})
+variable        V equal (11.296*11.296*${LZ})
+variable        V equal (11.296*11.296*11.296)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442999.378145872
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442999.378145872/${N}
+variable        teng equal -442999.378145872/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1441.365262336/${N}
+variable        vol  equal 1441.365262336/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.260666112 -3460.93264176462
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*13
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.82733333333333 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8273333 2.8273333 2.8273333
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.309333 11.309333 11.309333)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442999.45    11.309333    11.309333    11.309333    17112.663    17112.663    17112.663 0.00017065764 0.00019838939 0.00019838942    17112.663 
+       2   -442999.45    11.309333    11.309333    11.309333    17112.663    17112.663    17112.663 0.00033226791 -0.00022203452 -0.00079482075    17112.663 
+Loop time of 2.08403 on 1 procs for 2 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442999.445283121  -442999.445317146  -442999.445317146
+  Force two-norm initial, final = 5.3817872e-07 7.4168741e-07
+  Force max component initial, final = 7.1964488e-08 1.1114088e-07
+  Final line search alpha, max atom move = 0.50000000 5.5570438e-08
+  Iterations, force evaluations = 2 5
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 2.0838     | 2.0838     | 2.0838     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 5.6982e-05 | 5.6982e-05 | 5.6982e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.000191   |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      17408.0 ave       17408 max       17408 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 17408
+Ave neighs/atom = 136.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.3093333333333
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.3093333333333
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.3093333333333
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.3093333333333*${LY}*${LZ})
+variable        V equal (11.3093333333333*11.3093333333333*${LZ})
+variable        V equal (11.3093333333333*11.3093333333333*11.3093333333333)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442999.445317146
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442999.445317146/${N}
+variable        teng equal -442999.445317146/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1446.47527387969/${N}
+variable        vol  equal 1446.47527387969/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.3005880771851 -3460.9331665402
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*14
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.83066666666667 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8306667 2.8306667 2.8306667
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.322667 11.322667 11.322667)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442999.49    11.322667    11.322667    11.322667     9057.476     9057.476     9057.477 -4.4810838e-05 9.1843021e-05 9.1843031e-05    9057.4764 
+       5   -442999.49    11.322667    11.322667    11.322667    9057.4945    9057.4941    9057.4944 -4.2203936e-05 0.00027471984 -0.00049469601    9057.4943 
+Loop time of 4.06525 on 1 procs for 5 steps with 128 atoms
+
+99.9% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442999.487189668  -442999.487208715  -442999.487208715
+  Force two-norm initial, final = 6.4785098e-07 9.8627761e-07
+  Force max component initial, final = 8.7451315e-08 1.8590482e-07
+  Final line search alpha, max atom move = 0.50000000 9.2952408e-08
+  Iterations, force evaluations = 5 11
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 4.0648     | 4.0648     | 4.0648     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.00010586 | 0.00010586 | 0.00010586 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0003457  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      17408.0 ave       17408 max       17408 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 17408
+Ave neighs/atom = 136.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.3226666666667
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.3226666666667
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.3226666666667
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.3226666666667*${LY}*${LZ})
+variable        V equal (11.3226666666667*11.3226666666667*${LZ})
+variable        V equal (11.3226666666667*11.3226666666667*11.3226666666667)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442999.487208715
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442999.487208715/${N}
+variable        teng equal -442999.487208715/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1451.59734871231/${N}
+variable        vol  equal 1451.59734871231/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.3406042868149 -3460.93349381809
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*15
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.834 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8340000 2.8340000 2.8340000
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.336000 11.336000 11.336000)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0    -442999.5       11.336       11.336       11.336    1098.9294    1098.9294    1098.9294 -1.0474648e-06 1.0474734e-06 1.0474526e-06    1098.9294 
+       1    -442999.5       11.336       11.336       11.336    1098.9294    1098.9294    1098.9294 -1.0474648e-06 1.0474734e-06 1.0474526e-06    1098.9294 
+Loop time of 1.35575 on 1 procs for 1 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442999.503435758  -442999.503435758  -442999.503435758
+  Force two-norm initial, final = 4.1738652e-07 4.1738652e-07
+  Force max component initial, final = 6.4135823e-08 6.4135823e-08
+  Final line search alpha, max atom move = 0.50000000 3.2067912e-08
+  Iterations, force evaluations = 1 3
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 1.3556     | 1.3556     | 1.3556     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 3.6716e-05 | 3.6716e-05 | 3.6716e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0001328  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      17408.0 ave       17408 max       17408 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 17408
+Ave neighs/atom = 136.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.336
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.336
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.336
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.336*${LY}*${LZ})
+variable        V equal (11.336*11.336*${LZ})
+variable        V equal (11.336*11.336*11.336)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442999.503435758
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442999.503435758/${N}
+variable        teng equal -442999.503435758/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1456.731501056/${N}
+variable        vol  equal 1456.731501056/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.380714852 -3460.93362059186
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*16
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.83733333333333 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8373333 2.8373333 2.8373333
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.349333 11.349333 11.349333)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442999.49    11.349333    11.349333    11.349333   -6638.5867   -6638.5867   -6638.5867 -9.7646026e-12 1.3232405e-11 2.8213922e-11   -6638.5867 
+       2   -442999.49    11.349333    11.349333    11.349333   -6638.5814   -6638.5813   -6638.5818 0.00013346053 -0.00042988446 5.3312153e-05   -6638.5815 
+Loop time of 2.05513 on 1 procs for 2 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442999.494444977  -442999.494454452  -442999.494454452
+  Force two-norm initial, final = 3.2372542e-07 6.6749668e-07
+  Force max component initial, final = 5.0927568e-08 1.1367590e-07
+  Final line search alpha, max atom move = 0.50000000 5.6837951e-08
+  Iterations, force evaluations = 2 5
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 2.0549     | 2.0549     | 2.0549     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 5.1975e-05 | 5.1975e-05 | 5.1975e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0001776  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      17408.0 ave       17408 max       17408 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 17408
+Ave neighs/atom = 136.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.3493333333333
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.3493333333333
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.3493333333333
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.3493333333333*${LY}*${LZ})
+variable        V equal (11.3493333333333*11.3493333333333*${LZ})
+variable        V equal (11.3493333333333*11.3493333333333*11.3493333333333)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442999.494454452
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442999.494454452/${N}
+variable        teng equal -442999.494454452/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1461.87774513302/${N}
+variable        vol  equal 1461.87774513302/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.4209198838517 -3460.93355042541
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*17
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.84066666666667 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8406667 2.8406667 2.8406667
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.362667 11.362667 11.362667)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442999.46    11.362667    11.362667    11.362667   -14151.132   -14151.132   -14151.136 0.00010606844 0.00010367823 0.00010367823   -14151.133 
+       2   -442999.46    11.362667    11.362667    11.362667   -14151.107   -14151.105   -14151.106 -0.0001094327 0.00042447068 0.00010398402   -14151.106 
+Loop time of 2.06212 on 1 procs for 2 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442999.460915869  -442999.460930079  -442999.460930079
+  Force two-norm initial, final = 6.3313844e-07 8.3842530e-07
+  Force max component initial, final = 9.9780264e-08 1.2195438e-07
+  Final line search alpha, max atom move = 0.50000000 6.0977190e-08
+  Iterations, force evaluations = 2 5
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 2.0619     | 2.0619     | 2.0619     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 5.1737e-05 | 5.1737e-05 | 5.1737e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0001752  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      17408.0 ave       17408 max       17408 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 17408
+Ave neighs/atom = 136.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.3626666666667
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.3626666666667
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.3626666666667
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.3626666666667*${LY}*${LZ})
+variable        V equal (11.3626666666667*11.3626666666667*${LZ})
+variable        V equal (11.3626666666667*11.3626666666667*11.3626666666667)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442999.460930079
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442999.460930079/${N}
+variable        teng equal -442999.460930079/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1467.03609516564/${N}
+variable        vol  equal 1467.03609516564/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.4612194934816 -3460.93328851624
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*18
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.844 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8440000 2.8440000 2.8440000
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.376000 11.376000 11.376000)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0    -442999.4       11.376       11.376       11.376   -21434.186   -21434.186   -21434.188 -0.00084885557 -0.00068893548 -0.00068893549   -21434.187 
+       2    -442999.4       11.376       11.376       11.376   -21434.172   -21434.173   -21434.172 -0.00039648463 0.00017446592 1.946472e-05   -21434.172 
+Loop time of 2.02254 on 1 procs for 2 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442999.403414064  -442999.403436801  -442999.403436801
+  Force two-norm initial, final = 7.2743367e-07 9.0245366e-07
+  Force max component initial, final = 1.2121790e-07 1.3573076e-07
+  Final line search alpha, max atom move = 0.50000000 6.7865381e-08
+  Iterations, force evaluations = 2 5
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 2.0223     | 2.0223     | 2.0223     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 5.5075e-05 | 5.5075e-05 | 5.5075e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0001769  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      17408.0 ave       17408 max       17408 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 17408
+Ave neighs/atom = 136.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.376
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.376
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.376
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.376*${LY}*${LZ})
+variable        V equal (11.376*11.376*${LZ})
+variable        V equal (11.376*11.376*11.376)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442999.403436801
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442999.403436801/${N}
+variable        teng equal -442999.403436801/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1472.206565376/${N}
+variable        vol  equal 1472.206565376/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.501613792 -3460.93283935001
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*19
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.84733333333333 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8473333 2.8473333 2.8473333
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.389333 11.389333 11.389333)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442999.32    11.389333    11.389333    11.389333   -28482.946   -28482.946   -28482.944 -0.00030646464 -0.00042451529 -0.00042451528   -28482.945 
+       2   -442999.32    11.389333    11.389333    11.389333   -28482.989   -28482.989    -28482.99 0.00016381699 -0.00042764745 0.00017959815   -28482.989 
+Loop time of 2.03409 on 1 procs for 2 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442999.322621045  -442999.322636619  -442999.322636619
+  Force two-norm initial, final = 4.6637242e-07 7.6411595e-07
+  Force max component initial, final = 7.6425559e-08 1.2748865e-07
+  Final line search alpha, max atom move = 0.50000000 6.3744327e-08
+  Iterations, force evaluations = 2 5
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 2.0338     | 2.0338     | 2.0338     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 5.2929e-05 | 5.2929e-05 | 5.2929e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0001864  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      17408.0 ave       17408 max       17408 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 17408
+Ave neighs/atom = 136.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.3893333333333
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.3893333333333
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.3893333333333
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.3893333333333*${LY}*${LZ})
+variable        V equal (11.3893333333333*11.3893333333333*${LZ})
+variable        V equal (11.3893333333333*11.3893333333333*11.3893333333333)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442999.322636619
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442999.322636619/${N}
+variable        teng equal -442999.322636619/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1477.38916998636/${N}
+variable        vol  equal 1477.38916998636/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.5421028905184 -3460.93220809859
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*20
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.85066666666667 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8506667 2.8506667 2.8506667
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.402667 11.402667 11.402667)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442999.22    11.402667    11.402667    11.402667   -35292.746   -35292.746   -35292.747 -4.5077406e-05 -6.8690716e-05 -6.869069e-05   -35292.746 
+       4   -442999.22    11.402667    11.402667    11.402667   -35292.747   -35292.747   -35292.748 -2.9298435e-05 -1.4250177e-05 -0.00027829428   -35292.748 
+Loop time of 3.43427 on 1 procs for 4 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442999.219136358  -442999.219171171  -442999.219171171
+  Force two-norm initial, final = 4.5147937e-07 8.5246108e-07
+  Force max component initial, final = 7.5451968e-08 1.2558798e-07
+  Final line search alpha, max atom move = 0.50000000 6.2793991e-08
+  Iterations, force evaluations = 4 9
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 3.4339     | 3.4339     | 3.4339     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 8.8215e-05 | 8.8215e-05 | 8.8215e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0002649  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      17408.0 ave       17408 max       17408 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 17408
+Ave neighs/atom = 136.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.4026666666667
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.4026666666667
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.4026666666667
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.4026666666667*${LY}*${LZ})
+variable        V equal (11.4026666666667*11.4026666666667*${LZ})
+variable        V equal (11.4026666666667*11.4026666666667*11.4026666666667)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442999.219171171
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442999.219171171/${N}
+variable        teng equal -442999.219171171/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1482.58392321898/${N}
+variable        vol  equal 1482.58392321898/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.5826869001483 -3460.93139977477
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*21
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.854 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8540000 2.8540000 2.8540000
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.416000 11.416000 11.416000)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442999.09       11.416       11.416       11.416    -41858.87    -41858.87    -41858.87 -6.2988771e-06 -4.2736691e-06 -4.2736618e-06    -41858.87 
+       1   -442999.09       11.416       11.416       11.416    -41858.87    -41858.87    -41858.87 -6.2988771e-06 -4.2736691e-06 -4.2736618e-06    -41858.87 
+Loop time of 1.35861 on 1 procs for 1 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442999.093739635  -442999.093739635  -442999.093739635
+  Force two-norm initial, final = 6.0651952e-07 6.0651952e-07
+  Force max component initial, final = 1.0214484e-07 1.0214484e-07
+  Final line search alpha, max atom move = 0.50000000 5.1072420e-08
+  Iterations, force evaluations = 1 3
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 1.3584     | 1.3584     | 1.3584     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 3.7432e-05 | 3.7432e-05 | 3.7432e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0001252  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      17408.0 ave       17408 max       17408 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 17408
+Ave neighs/atom = 136.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.416
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.416
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.416
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.416*${LY}*${LZ})
+variable        V equal (11.416*11.416*${LZ})
+variable        V equal (11.416*11.416*11.416)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442999.093739635
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442999.093739635/${N}
+variable        teng equal -442999.093739635/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1487.790839296/${N}
+variable        vol  equal 1487.790839296/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.623365932 -3460.9304198409
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*22
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.85733333333333 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8573333 2.8573333 2.8573333
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.429333 11.429333 11.429333)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442998.95    11.429333    11.429333    11.429333   -48177.397   -48177.397   -48177.397 1.1556588e-11 1.3395945e-06 1.3396045e-06   -48177.397 
+       2   -442998.95    11.429333    11.429333    11.429333   -48177.385   -48177.384   -48177.384 -1.7571027e-05 -3.3418869e-05 8.2261205e-05   -48177.384 
+Loop time of 2.03863 on 1 procs for 2 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442998.946990357  -442998.947016233  -442998.947016233
+  Force two-norm initial, final = 6.9112752e-07 9.9085880e-07
+  Force max component initial, final = 1.2219702e-07 1.3211264e-07
+  Final line search alpha, max atom move = 0.50000000 6.6056321e-08
+  Iterations, force evaluations = 2 5
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 2.0384     | 2.0384     | 2.0384     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 5.0306e-05 | 5.0306e-05 | 5.0306e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0001929  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      17408.0 ave       17408 max       17408 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 17408
+Ave neighs/atom = 136.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.4293333333333
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.4293333333333
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.4293333333333
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.4293333333333*${LY}*${LZ})
+variable        V equal (11.4293333333333*11.4293333333333*${LZ})
+variable        V equal (11.4293333333333*11.4293333333333*11.4293333333333)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442998.947016233
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442998.947016233/${N}
+variable        teng equal -442998.947016233/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1493.00993243969/${N}
+variable        vol  equal 1493.00993243969/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.6641400971851 -3460.92927356432
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*23
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.86066666666667 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8606667 2.8606667 2.8606667
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.442667 11.442667 11.442667)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442998.78    11.442667    11.442667    11.442667   -54244.902   -54244.902   -54244.902 3.0841459e-06 -1.3448817e-05 -1.3448825e-05   -54244.902 
+       2   -442998.78    11.442667    11.442667    11.442667   -54244.917   -54244.917   -54244.917 -0.00023420868 0.00028153321 7.8771052e-05   -54244.917 
+Loop time of 2.02798 on 1 procs for 2 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442998.779731879  -442998.779738907  -442998.779738907
+  Force two-norm initial, final = 4.9333768e-07 7.8685171e-07
+  Force max component initial, final = 6.5864785e-08 1.0979866e-07
+  Final line search alpha, max atom move = 0.50000000 5.4899330e-08
+  Iterations, force evaluations = 2 5
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 2.0277     | 2.0277     | 2.0277     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 5.7459e-05 | 5.7459e-05 | 5.7459e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0001798  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      14336.0 ave       14336 max       14336 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 14336
+Ave neighs/atom = 112.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.4426666666667
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.4426666666667
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.4426666666667
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.4426666666667*${LY}*${LZ})
+variable        V equal (11.4426666666667*11.4426666666667*${LZ})
+variable        V equal (11.4426666666667*11.4426666666667*11.4426666666667)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442998.779738907
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442998.779738907/${N}
+variable        teng equal -442998.779738907/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1498.24121687231/${N}
+variable        vol  equal 1498.24121687231/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.7050095068149 -3460.92796671021
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*24
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.864 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8640000 2.8640000 2.8640000
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.456000 11.456000 11.456000)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442998.59       11.456       11.456       11.456   -60059.154   -60059.154   -60059.154 0.00031990533 0.00022032077 0.00022032077   -60059.154 
+       1   -442998.59       11.456       11.456       11.456   -60059.154   -60059.154   -60059.154 0.00031990533 0.00022032077 0.00022032077   -60059.154 
+Loop time of 1.35228 on 1 procs for 1 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+      -442998.59263362   -442998.59263362   -442998.59263362
+  Force two-norm initial, final = 5.0225789e-07 5.0225789e-07
+  Force max component initial, final = 8.9666975e-08 8.9666975e-08
+  Final line search alpha, max atom move = 0.50000000 4.4833487e-08
+  Iterations, force evaluations = 1 3
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 1.3521     | 1.3521     | 1.3521     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 3.4571e-05 | 3.4571e-05 | 3.4571e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0001314  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      14336.0 ave       14336 max       14336 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 14336
+Ave neighs/atom = 112.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.456
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.456
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.456
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.456*${LY}*${LZ})
+variable        V equal (11.456*11.456*${LZ})
+variable        V equal (11.456*11.456*11.456)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442998.59263362
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442998.59263362/${N}
+variable        teng equal -442998.59263362/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1503.484706816/${N}
+variable        vol  equal 1503.484706816/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.745974272 -3460.92650495016
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*25
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.86733333333333 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8673333 2.8673333 2.8673333
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.469333 11.469333 11.469333)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442998.39    11.469333    11.469333    11.469333   -65618.902   -65618.902   -65618.901 -6.6061873e-05 -3.5702047e-05 -3.5702047e-05   -65618.902 
+       6   -442998.39    11.469333    11.469333    11.469333    -65618.93    -65618.93    -65618.93 0.00022403893 0.00010178244 9.5010577e-05    -65618.93 
+Loop time of 5.17362 on 1 procs for 6 steps with 128 atoms
+
+99.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442998.386407467   -442998.38641244   -442998.38641244
+  Force two-norm initial, final = 5.3660239e-07 9.8892799e-07
+  Force max component initial, final = 8.8289583e-08 1.4815845e-07
+  Final line search alpha, max atom move = 0.50000000 7.4079226e-08
+  Iterations, force evaluations = 6 13
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 5.1731     | 5.1731     | 5.1731     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.00012398 | 0.00012398 | 0.00012398 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0003831  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      14336.0 ave       14336 max       14336 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 14336
+Ave neighs/atom = 112.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.4693333333333
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.4693333333333
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.4693333333333
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.4693333333333*${LY}*${LZ})
+variable        V equal (11.4693333333333*11.4693333333333*${LZ})
+variable        V equal (11.4693333333333*11.4693333333333*11.4693333333333)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442998.38641244
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442998.38641244/${N}
+variable        teng equal -442998.38641244/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1508.74041649302/${N}
+variable        vol  equal 1508.74041649302/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.7870345038517 -3460.92489384719
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*26
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.87066666666667 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8706667 2.8706667 2.8706667
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.482667 11.482667 11.482667)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442998.16    11.482667    11.482667    11.482667   -70924.293   -70924.293   -70924.293 -9.1433935e-05 -8.2742482e-05 -8.2742471e-05   -70924.293 
+       1   -442998.16    11.482667    11.482667    11.482667   -70924.293   -70924.293   -70924.293 -9.1433935e-05 -8.2742482e-05 -8.2742471e-05   -70924.293 
+Loop time of 1.36425 on 1 procs for 1 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442998.161875243  -442998.161875243  -442998.161875243
+  Force two-norm initial, final = 4.3044688e-07 4.3044688e-07
+  Force max component initial, final = 7.8873736e-08 7.8873736e-08
+  Final line search alpha, max atom move = 0.50000000 3.9436868e-08
+  Iterations, force evaluations = 1 3
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 1.3641     | 1.3641     | 1.3641     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 3.5048e-05 | 3.5048e-05 | 3.5048e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0001466  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      14336.0 ave       14336 max       14336 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 14336
+Ave neighs/atom = 112.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.4826666666667
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.4826666666667
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.4826666666667
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.4826666666667*${LY}*${LZ})
+variable        V equal (11.4826666666667*11.4826666666667*${LZ})
+variable        V equal (11.4826666666667*11.4826666666667*11.4826666666667)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442998.161875243
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442998.161875243/${N}
+variable        teng equal -442998.161875243/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1514.00836012564/${N}
+variable        vol  equal 1514.00836012564/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.8281903134816 -3460.92313965034
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*27
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.874 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8740000 2.8740000 2.8740000
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.496000 11.496000 11.496000)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442997.92       11.496       11.496       11.496   -75976.779   -75976.779   -75976.779 2.4759063e-05 0.00011641576 0.00011641574   -75976.779 
+       2   -442997.92       11.496       11.496       11.496   -75976.765   -75976.765   -75976.765 0.00016365665 9.4257543e-05 0.00058851696   -75976.765 
+Loop time of 2.06654 on 1 procs for 2 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442997.919713181  -442997.919730805  -442997.919730805
+  Force two-norm initial, final = 4.3555705e-07 7.4079136e-07
+  Force max component initial, final = 8.8770743e-08 1.2094617e-07
+  Final line search alpha, max atom move = 0.50000000 6.0473084e-08
+  Iterations, force evaluations = 2 5
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 2.0663     | 2.0663     | 2.0663     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 5.2214e-05 | 5.2214e-05 | 5.2214e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0001774  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      14336.0 ave       14336 max       14336 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 14336
+Ave neighs/atom = 112.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.496
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.496
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.496
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.496*${LY}*${LZ})
+variable        V equal (11.496*11.496*${LZ})
+variable        V equal (11.496*11.496*11.496)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442997.919730805
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442997.919730805/${N}
+variable        teng equal -442997.919730805/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1519.288551936/${N}
+variable        vol  equal 1519.288551936/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.869441812 -3460.92124789691
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*28
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.87733333333333 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8773333 2.8773333 2.8773333
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.509333 11.509333 11.509333)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442997.66    11.509333    11.509333    11.509333   -80779.232   -80779.232   -80779.232 5.5715024e-05 2.3189513e-05 2.3189521e-05   -80779.232 
+       2   -442997.66    11.509333    11.509333    11.509333   -80779.235   -80779.236   -80779.235 -0.00019456256 0.00027438596 9.8436063e-05   -80779.235 
+Loop time of 2.02956 on 1 procs for 2 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442997.660749894  -442997.660752091  -442997.660752091
+  Force two-norm initial, final = 3.9009200e-07 7.2252347e-07
+  Force max component initial, final = 6.6319620e-08 1.2286773e-07
+  Final line search alpha, max atom move = 0.50000000 6.1433867e-08
+  Iterations, force evaluations = 2 5
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 2.0293     | 2.0293     | 2.0293     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 5.2691e-05 | 5.2691e-05 | 5.2691e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0001736  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      14336.0 ave       14336 max       14336 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 14336
+Ave neighs/atom = 112.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.5093333333333
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.5093333333333
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.5093333333333
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.5093333333333*${LY}*${LZ})
+variable        V equal (11.5093333333333*11.5093333333333*${LZ})
+variable        V equal (11.5093333333333*11.5093333333333*11.5093333333333)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442997.660752091
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442997.660752091/${N}
+variable        teng equal -442997.660752091/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1524.58100614636/${N}
+variable        vol  equal 1524.58100614636/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.9107891105184 -3460.91922462571
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*29
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.88066666666667 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8806667 2.8806667 2.8806667
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.522667 11.522667 11.522667)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0   -442997.39    11.522667    11.522667    11.522667   -85336.089   -85336.089   -85336.089 -5.0504074e-12 9.6284746e-12 -7.6301119e-12   -85336.089 
+       3   -442997.39    11.522667    11.522667    11.522667   -85336.088   -85336.088   -85336.088 -0.00032955716 -0.00010839368 0.00022329066   -85336.088 
+Loop time of 2.79568 on 1 procs for 3 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442997.385645481  -442997.385678548  -442997.385678548
+  Force two-norm initial, final = 4.2602011e-07 6.9041333e-07
+  Force max component initial, final = 6.4125733e-08 1.1238291e-07
+  Final line search alpha, max atom move = 0.50000000 5.6191453e-08
+  Iterations, force evaluations = 3 7
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 2.7954     | 2.7954     | 2.7954     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 6.8665e-05 | 6.8665e-05 | 6.8665e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.000226   |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      14336.0 ave       14336 max       14336 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 14336
+Ave neighs/atom = 112.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.5226666666667
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.5226666666667
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.5226666666667
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.5226666666667*${LY}*${LZ})
+variable        V equal (11.5226666666667*11.5226666666667*${LZ})
+variable        V equal (11.5226666666667*11.5226666666667*11.5226666666667)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442997.385678548
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442997.385678548/${N}
+variable        teng equal -442997.385678548/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1529.88573697898/${N}
+variable        vol  equal 1529.88573697898/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.9522323201483 -3460.91707561366
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+variable        i loop 1 30
+variable        latparam equal 2.834-0.05+(0.1/30)*${i}
+variable        latparam equal 2.834-0.05+(0.1/30)*30
+
+clear
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.884 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8840000 2.8840000 2.8840000
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.536000 11.536000 11.536000)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.000 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0    -442997.1       11.536       11.536       11.536   -89653.083   -89653.083   -89653.079 -7.7884076e-06 2.0231364e-07 2.0229536e-07   -89653.082 
+       1    -442997.1       11.536       11.536       11.536   -89653.083   -89653.083   -89653.079 -7.7884076e-06 2.0231364e-07 2.0229536e-07   -89653.082 
+Loop time of 1.34285 on 1 procs for 1 steps with 128 atoms
+
+100.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442997.095278227  -442997.095278227  -442997.095278227
+  Force two-norm initial, final = 5.7352717e-07 5.7352717e-07
+  Force max component initial, final = 7.7168266e-08 7.7168266e-08
+  Final line search alpha, max atom move = 0.50000000 3.8584133e-08
+  Iterations, force evaluations = 1 3
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 1.3427     | 1.3427     | 1.3427     |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 3.6478e-05 | 3.6478e-05 | 3.6478e-05 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.0001304  |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      14336.0 ave       14336 max       14336 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 14336
+Ave neighs/atom = 112.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.536
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.536
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.536
+variable        tmp equal "atoms"
+variable        N equal ${tmp}
+variable        N equal 128
+variable        V equal (${LX}*${LY}*${LZ})
+variable        V equal (11.536*${LY}*${LZ})
+variable        V equal (11.536*11.536*${LZ})
+variable        V equal (11.536*11.536*11.536)
+variable        tmp equal "pe"
+variable        pe0 equal ${tmp}
+variable        pe0 equal -442997.095278227
+
+variable        teng equal ${pe0}/${N}
+variable        teng equal -442997.095278227/${N}
+variable        teng equal -442997.095278227/128
+variable        vol  equal ${V}/${N}
+variable        vol  equal 1535.202758656/${N}
+variable        vol  equal 1535.202758656/128
+#-----compute
+print           "${vol} ${teng}" append ./volume.dat
+11.993771552 -3460.91480686115
+
+#-----jump to next loop
+next            i
+jump            in.eos loop_start
+
+shell           cp volume.dat ../PLOT_DATA/eos_gap_lei.csv
+#-----end---------------------------------------------------------------
+Total wall time: 0:01:39

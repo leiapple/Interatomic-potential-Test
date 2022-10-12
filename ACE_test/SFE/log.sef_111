@@ -1,0 +1,28 @@
+
+clear
+units           metal
+boundary        p p p
+dimension       3
+atom_style      atomic
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+variable        latparam equal 2.833612
+lattice         bcc ${latparam} orient x -1 1 0 orient y 1 1 1 orient z 1 1 -2
+lattice         bcc 2.833612 orient x -1 1 0 orient y 1 1 1 orient z 1 1 -2
+Lattice spacing in x,y,z = 4.0073325 4.9079600 4.6272690
+region          box block 0 20 0 1 0 3 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (80.146650 4.9079600 13.881807)
+  8 by 1 by 2 MPI processor grid
+create_atoms    1 box
+Created 480 atoms
+  create_atoms CPU = 0.001 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.in
+#pair_style      aenet
+#pair_coeff      * * v-1 Fe 15tw-15tw.nn Fe
+#----------------------NEUip
+pair_style  pace
+ERROR: Unrecognized pair style 'pace' (../force.cpp:279)
+Last command: pair_style  pace

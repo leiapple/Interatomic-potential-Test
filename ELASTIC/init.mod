@@ -48,8 +48,7 @@ variable        zdim_2 equal (${latparam}*${box_length})*sqrt(1)
 boundary	p p p
 
 lattice         bcc ${latparam} orient x 0 0 1 orient y 1 0 0 orient z 0 1 0
-#region		box block ${xdim_1} ${xdim_2} ${ydim_1} ${ydim_2} ${zdim_1} ${zdim_2} units box
-region          box block 0 1 0 1 0 1 units lattice
+region		box block ${xdim_1} ${xdim_2} ${ydim_1} ${ydim_2} ${zdim_1} ${zdim_2} units box
 create_box	1 box
 create_atoms	1 box
 

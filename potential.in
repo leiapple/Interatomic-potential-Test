@@ -1,4 +1,57 @@
+#pair_style      aenet
+#pair_coeff      * * v-1 Fe 15tw-15tw.nn Fe
+#----------------------NEUip
+#pair_style  pace 
+#pair_coeff * * /scratch-shared/zhanglei1/ace_julia_training_slovers/N4.D14_rrqr/Fe_ace_N4_D14_R5.yace Fe
+#pair_coeff  * * /data/lei/train_ace_2021_12_08/training_ace_iron_2022_08_12_v2/interim_potential_0.yace Fe
+#pair_coeff  * * /data/lei/train_ace_2021_12_08/training_ace_iron_2022_08_12_v3_iter2000/interim_potential_0.yace Fe
+#pair_coeff  * * /data/lei/train_ace_2021_12_08/training_ace_iron_2022_08_16/interim_potential_0.yace Fe
+#pair_coeff  * * /data/lei/ace_iron/ace_Cas_suggested/Fe_ace_N3_D10_R5.yace Fe
+#pair_coeff  * * /data/lei/ace_iron/ace_Cas_suggested_updated_1/Fe_ace_N3_D10_R5.yace Fe
+#pair_coeff  * * /data/lei/ace_iron/ace_tuning_weights/Fe_ace_N3_D10_R5.yace Fe
+#pair_coeff  * * /data/lei/ace_iron/ace_tuning_weights/Fe_ace_N3_D16_R5.yace Fe
+#pair_coeff  * * /data/lei/ace_iron/ace_tuning_weights/Fe_ace_N4_D12_R5.yace Fe
+#pair_coeff  * * /home/lei/ACEproject/ace_models/Fe_ace_N4_D18_R5.yace Fe
+#pair_coeff  * * /home/lei/ACEproject/ace_models/Fe_ace_N3_D18_R5.yace Fe
+#pair_coeff  * * /data/lei/train_ace_2021_12_08/training_ace_iron_2022_08_12_v3_iter2000/output_potential.yace Fe
+# Addition
+#newton  off
+
+#pair_style	allegro
+#pair_coeff	* * /home/zhanglei1/automatic_workflow_IAP_v1_2021_12_01/allegro-single-deployed_2022_09_22/allegro-single-deployed.pth Fe
+
+# ---------------------GAP--------------------
+pair_style      quip
+pair_coeff      * * /scratch-shared/zhanglei1/GAP_training_OgataDBs/M4700_l8n8_R6.5_noIso/gap_Fe_test.xml "Potential xml_label=GAP_2022_10_11_120_15_58_18_226" 26
+#pair_coeff      * * /scratch-shared/zhanglei1/GAP_training/M3000_l6n6/gap_Fe_test.xml "Potential xml_label=GAP_2022_10_3_120_16_55_34_368" 26
+#pair_coeff      * * /home/lei/gap_training/l_6_n_12_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_1_60_0_17_25_709" 26
+#pair_coeff      * * /home/lei/gap_training_2021_12_13/l_6_n_12_allNewData_turboSOAP/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_12_60_17_6_15_829" 26 # TurboSOAP descriptor
+#pair_coeff      * * /home/lei/gap_training_2021_12_13/l_6_n_12_allNewData_doubleSOAP/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_14_60_8_16_28_553" 26 
+#pair_coeff      * * /home/lei/gap_training_2021_12_13/l_6_n_12_newdata_2021_12_16/gap_Fe_test.xml "Potential xml_label=GAP_2021_12_17_60_2_59_46_132" 26 
+#pair_coeff      * * /home/lei/gap_training_2021_12_13/l_6_n_12_newdata_doubleSOAP_2021_12_17/gap_Fe_test.xml   "Potential xml_label=GAP_2021_12_17_60_21_56_31_840" 26
+#pair_coeff      * * /data/lei/gap_training_2021_12_13/l_6_n_12_newdata_doubleSOAP_2021_12_21/gap_Fe_test.xml   "Potential xml_label=GAP_2021_12_21_60_14_55_52_923" 26
+#pair_coeff      * * /home/lei/gap_training_2021_12_13/l_6_n_12_newdata_doubleSOAP_Rcut6_2021_12_21/gap_Fe_test.xml   "Potential xml_label=GAP_2021_12_21_60_22_39_47_189" 26
+#pair_coeff      * * /data/lei/gap_training_addCracks_2022_01_25/doubSOAP_R5_2022_01_25/gap_Fe_test.xml   "Potential xml_label=GAP_2022_1_26_60_7_10_9_751" 26
+
+#pair_coeff      * * /home/p301616/gap_trainedOn_nieuwpoort/doubSOAP_R5_2022_01_28/gap_Fe_test.xml   "Potential xml_label=GAP_2022_1_29_60_3_44_50_986" 26
+
+#pair_coeff      * * /home/lei/gap_training_addCracks_2022_01_25/doubSOAP_R5_2022_02_10_iter3/gap_Fe_test.xml   "Potential xml_label=GAP_2022_2_11_60_3_6_24_998" 26 
+#pair_coeff      * * /home/lei/gap_training_addCracks/doubSOAP_R5_2022_02_23_iter8/gap_Fe_test.xml   "Potential xml_label=GAP_2022_2_23_60_14_2_51_919" 26
+#pair_coeff      * * /home/lei/gap_training_addCracks/turboSOAP_iter10/gap_Fe_test.xml   "Potential xml_label=GAP_2022_3_8_60_9_8_45_147" 26
+#pair_coeff      * * /home/lei/gap_training_addCracks/turboSOAP_iter11/gap_Fe_test.xml   "Potential xml_label=GAP_2022_3_8_60_14_22_10_147" 26
+#pair_coeff      * * /home/lei/gap_training_addCracks/doubSOAP_R5_2022_03_08_iter11/gap_Fe_test.xml   "Potential xml_label=GAP_2022_3_8_60_13_19_13_884" 26
+#pair_coeff      * * /home/lei/gap_training_addCracks/turboSOAP_iter11_2/gap_Fe_test.xml   "Potential xml_label=GAP_2022_3_9_60_20_54_41_133" 26
+#pair_coeff      * * /home/lei/gap_training_addCracks/turboSOAP_iter11/gap_Fe_test.xml   "Potential xml_label=GAP_2022_3_10_60_5_9_4_798" 26
+#pair_coeff      * * /home/lei/gap_training_addCracks/turboSOAP_iter11_basis10/gap_Fe_test.xml   "Potential xml_label=GAP_2022_3_10_60_10_51_48_731" 26
+#pair_coeff      * * /home/lei/gap_training_addCracks/doubleturboSOAP_iter11/gap_Fe_test.xml   "Potential xml_label=GAP_2022_3_9_60_23_12_29_37" 26
+#pair_coeff      * * /home/lei/gap_training_addCracks/turboSOAP_iter11_compressfile/gap_Fe_test.xml   "Potential xml_label=GAP_2022_3_10_60_11_56_19_400" 26
+#pair_coeff      * * /home/lei/gap_snellius/doubleturboSOAP_iter11_basis8/gap_Fe_test.xml   "Potential xml_label=GAP_2022_3_10_60_18_34_37_91" 26
+#pair_coeff      * * /home/lei/gap_snellius/doubleturboSOAP_iter0_basis8/gap_Fe_test.xml "Potential xml_label=GAP_2022_3_11_60_22_7_9_623" 26
+#pair_coeff      * * /home/lei/gap_snellius/doubleturboSOAP_iter0_hcp_basis8/gap_Fe_test.xml "Potential xml_label=GAP_2022_3_28_120_15_22_12_14" 26
+#pair_coeff      * * /home/lei/gap_snellius/final/gap_Fe_test.xml "Potential xml_label=GAP_2022_5_28_120_3_13_35_983" 26
+#---------------------------------------------
+
 #---------------------ADP---------------------
-pair_style adp
-pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
 #---------------------------------------------

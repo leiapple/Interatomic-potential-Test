@@ -14,7 +14,7 @@ variable        eV2J   equal 1.60218e-19
 variable        Angs2M equal 1.0e-10
 #-------Define geometry  (2d X 2d) ------------------------------------
 lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1 
-region          box block 0 1 0 1 0 20 units lattice
+region          box block 0 1 0 1 0 10 units lattice
 create_box      1 box
 create_atoms    1 box
 
@@ -41,17 +41,17 @@ variable        tmp equal pe
 variable        pe0 equal ${tmp}
 
 #-----Add the vacuum layer---------------------------------------------
-change_box      all z delta -20 20 units box
+change_box      all z delta -10 10 units box
 
 #------Relaxation -----------------------------------------------------
-#dump            1 all custom 2 dump_100.* id type x y z fx fy fz c_stress[1] c_stress[2] c_stress[3] c_stress[4] c_stress[5] c_stress[6]
+dump            1 all custom 2 dump_100.* id type x y z fx fy fz c_stress[1] c_stress[2] c_stress[3] c_stress[4] c_stress[5] c_stress[6]
 min_style       cg
 minimize        1e-18 10e-9 100000000 1000000000
 
-timestep        0.01
-min_style       fire
-minimize        0.0 1e-3 100000000 10000000000
-#undump          1
+#timestep        0.01
+#min_style       fire
+#minimize        0.0 1e-3 100000000 10000000000
+undump          1
 #-----Calculate the lattice parameter----------------------------------
 variable        tmp equal "lx"
 variable        LX equal ${tmp}

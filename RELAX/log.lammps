@@ -1,0 +1,143 @@
+LAMMPS (30 Nov 2020)
+#-----bcc iron
+#-----relaxing the box to get the lattice constant
+# lei.zhang@rug.nl
+
+#------------------------------------
+units           metal
+dimension       3
+boundary        p p p
+atom_style      atomic
+atom_modify     map yes
+variable        latparam equal 2.834
+
+#-------Define geometry  (2d X 2d) -------------------------------------------------
+lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+lattice         bcc 2.834 orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+Lattice spacing in x,y,z = 2.8340000 2.8340000 2.8340000
+region          box block 0 4 0 4 0 4 units lattice
+create_box      1 box
+Created orthogonal box = (0.0000000 0.0000000 0.0000000) to (11.336000 11.336000 11.336000)
+  1 by 1 by 1 MPI processor grid
+create_atoms    1 box
+Created 128 atoms
+  create_atoms CPU = 0.001 seconds
+
+#-------Define interatomic potential-----------------------------------
+include         ../potential.mod
+# ---------------------GAP--------------------
+pair_style      quip
+# pair_coeff      * * /home/lei/train_GAP/db9_db10_yes_1112_l12_n12/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_27_60_22_35_40_664" 26 # l_max=12,n_max=12, all new data <including (111) and (112)>
+# pair_coeff      * * /home/lei/train_GAP/new_db9_db10_with100_110/gap_Fe_test.xml "Potential xml_label=GAP_2021_10_8_120_15_12_57_710" 26 # l_max=6,n_max=12, all new data <excluding (111) and (112)>
+pair_coeff      * * /home/lei/gap_training/l_4_n_8_allNewData/gap_Fe_test.xml "Potential xml_label=GAP_2021_11_30_60_3_11_7_525" 26
+#---------------------------------------------
+
+#---------------------ADP---------------------
+# pair_style adp
+# pair_coeff * * /home/lei/crackTip_ADP/Fe_nmFe.2021.adp.alloy Fe
+#---------------------------------------------
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+#-------Define atom mass (no needed for moelcular statics) ------------
+mass            1 55.845
+
+#-------Compute--------------------------------------------------------
+compute 	eng all pe/atom
+compute 	new all temp
+compute 	csym all centro/atom bcc
+compute 	poten all pe
+compute 	stress all stress/atom NULL
+
+#------Relaxation ------------------------------------------------------
+thermo          100
+thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
+
+fix             1 all box/relax iso 0.0 vmax 0.0001
+min_style       cg
+minimize        1e-30 10e-12 100000000 1000000000
+Neighbor list info ...
+  update every 1 steps, delay 0 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 7
+  ghost atom cutoff = 7
+  binsize = 3.5, bins = 4 4 4
+  2 neighbor lists, perpetual/occasional/extra = 1 1 0
+  (1) pair quip, perpetual
+      attributes: full, newton on
+      pair build: full/bin/atomonly
+      stencil: full/bin/3d
+      bin: standard
+  (2) compute centro/atom, occasional, copy from (1)
+      attributes: full, newton on
+      pair build: copy
+      stencil: none
+      bin: none
+Per MPI rank memory allocation (min/avg/max) = 5.113 | 5.113 | 5.113 Mbytes
+Step PotEng Lx Ly Lz Pxx Pyy Pzz Pxy Pxz Pyz Press 
+       0    -442999.5       11.336       11.336       11.336    1098.9272    1098.9272    1098.9271 -1.0474792e-06 1.0474563e-06 1.0474688e-06    1098.9272 
+       7    -442999.5    11.337871    11.337871    11.337871 0.0022115018 0.0026418339 0.0029517164 0.0002103037 0.00034413088 -0.00018075661  0.002601684 
+Loop time of 10.4409 on 1 procs for 7 steps with 128 atoms
+
+99.6% CPU use with 1 MPI tasks x no OpenMP threads
+
+Minimization stats:
+  Stopping criterion = linesearch alpha is zero
+  Energy initial, next-to-last, final = 
+     -442999.503439927  -442999.503675902  -442999.503675902
+  Force two-norm initial, final = 2.9975009 7.1298692e-06
+  Force max component initial, final = 2.9975009 7.0988545e-06
+  Final line search alpha, max atom move = 0.50000000 3.5494272e-06
+  Iterations, force evaluations = 7 20
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 10.44      | 10.44      | 10.44      |   0.0 | 99.99
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 0.00017047 | 0.00017047 | 0.00017047 |   0.0 |  0.00
+Output  | 0          | 0          | 0          |   0.0 |  0.00
+Modify  | 0          | 0          | 0          |   0.0 |  0.00
+Other   |            | 0.001029   |            |       |  0.01
+
+Nlocal:        128.000 ave         128 max         128 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:        1113.00 ave        1113 max        1113 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:         0.00000 ave           0 max           0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:      17408.0 ave       17408 max       17408 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 17408
+Ave neighs/atom = 136.00000
+Neighbor list builds = 0
+Dangerous builds = 0
+unfix           1
+
+#-----Calculate the lattice parameter-----------------------------------
+variable        tmp equal "lx"
+variable        LX equal ${tmp}
+variable        LX equal 11.3378705477623
+variable        tmp equal "ly"
+variable        LY equal ${tmp}
+variable        LY equal 11.3378705477623
+variable        tmp equal "lz"
+variable        LZ equal ${tmp}
+variable        LZ equal 11.3378705477623
+variable        ax equal ${LX}*0.25
+variable        ax equal 11.3378705477623*0.25
+variable        ay equal ${LY}*0.25
+variable        ay equal 11.3378705477623*0.25
+variable        az equal ${LZ}*0.25
+variable        az equal 11.3378705477623*0.25
+variable        lat equal (${ax}+${ay}+${az})/3
+variable        lat equal (2.83446763694058+${ay}+${az})/3
+variable        lat equal (2.83446763694058+2.83446763694058+${az})/3
+variable        lat equal (2.83446763694058+2.83446763694058+2.83446763694058)/3
+
+#print           "========================================="  append ../results.txt
+#print		"The equilirium lattice parameter is:" append ../results.txt
+#print           "${lat}" append ../results.txt
+
+Total wall time: 0:00:12

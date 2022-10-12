@@ -51,7 +51,7 @@ thermo_style    custom step pe lx ly lz pxx pyy pzz pxy pxz pyz press
 
 fix             relaxB all box/relax aniso 0.0 vmax 0.0001 couple xyz  #couple xz couple yz
 min_style       cg
-minimize        1e-18 10e-9 100000000 1000000000
+minimize        1e-18 10e-12 100000000 1000000000
 unfix           relaxB
 
 #-----Calculate the lattice parameter-----------------------------------
@@ -75,5 +75,4 @@ next            i
 jump            in.bain_path loop_start
 
 shell           cp bain_path.dat ../PLOT_DATA/BainPath_GAP_lei.csv
-shell           touch ../flag_bp
 #-----end---------------------------------------------------------------

@@ -49,7 +49,7 @@ minimize        1e-30 10e-12 100000000 1000000000
 
 timestep        0.01
 min_style       fire
-minimize        0.0 1e-4 100000000 10000000000
+minimize        0.0 1e-5 100000000 10000000000
 #-----Calculate the lattice parameter-----------------------------------
 variable        tmp equal pe
 variable        pe1 equal ${tmp}

@@ -54,14 +54,14 @@ variable        pe0 equal ${tmp}
 change_box      all z delta -5 5 units box
 
 #------Relaxation -----------------------------------------------------
-#dump            1 all custom 20 dump_112.* id type x y z fx fy fz c_stress[1] c_stress[2] c_stress[3] c_stress[4] c_stress[5] c_stress[6]
+dump            1 all custom 20 dump_112.* id type x y z fx fy fz c_stress[1] c_stress[2] c_stress[3] c_stress[4] c_stress[5] c_stress[6]
 min_style       cg
 minimize        1e-18 10e-9 100000000 1000000000
 
 timestep        0.01
 min_style       fire
 minimize        0.0 1e-3 100000000 10000000000
-#undump          1
+undump          1
 #-----Calculate the lattice parameter----------------------------------
 variable        tmp equal "lx"
 variable        LX equal ${tmp}

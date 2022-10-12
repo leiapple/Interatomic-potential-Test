@@ -1,0 +1,8 @@
+LAMMPS (3 Aug 2022)
+#-----bcc iron
+#-----calculate Bain path.
+# lei.zhang@rug.nl
+
+#---------------------------------------------------------------------
+shell           rm bain_path.dat
+log             bainpath.log

@@ -19,7 +19,7 @@ atom_modify     map yes
 
 #-------Define geometry  (2d X 2d) -------------------------------------------------
 lattice         bcc ${latparam} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1 
-region          box block 0 4 0 4 0 4 units lattice
+region          box block 0 1 0 1 0 1 units lattice
 create_box      1 box
 create_atoms    1 box
 
